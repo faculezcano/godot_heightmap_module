@@ -268,7 +268,7 @@ void HeightMapEditorPlugin::_import_raw_file_selected(String path) {
 	print_line(String("Deducted RAW heightmap resolution: {0}*{1}, for a length of {2}")
 			   .format(varray(size.x, size.y, static_cast<int>(len))));
 
-	if(len/2 != size.x * size.y) {
+	if(len != size.x * size.y) {
 
 		_accept_dialog->set_title(TTR("Import RAW heightmap error"));
 		_accept_dialog->set_text(TTR("The square resolution deducted from file size is not square.\n"
@@ -278,7 +278,7 @@ void HeightMapEditorPlugin::_import_raw_file_selected(String path) {
 
 	_import_file_path = path;
 
-	if(next_power_of_2(size.x)+1 != size.x) {
+	if(next_power_of_2(size.x-1)+1 != size.x) {
 
 		_import_confirmation_dialog->set_title(TTR("Import RAW heightmap"));
 		_import_confirmation_dialog->set_text(
@@ -318,7 +318,7 @@ void HeightMapEditorPlugin::_import_raw_file() {
 
 	// TODO Have these configurable
 	float min_y = 0;
-	float max_y = 600;
+	float max_y = 100;
 	float hrange = max_y - min_y;
 
 	height_image.lock();
@@ -327,13 +327,13 @@ void HeightMapEditorPlugin::_import_raw_file() {
 
 	for(int y = 0; y < size.y; ++y) {
 		for(int x = 0; x < size.x; ++x) {
-			uint16_t d = f->get_16();
-			float h = min_y + hrange * static_cast<float>(d) / 65536.f;
+			uint16_t d = f->get_8();
+			float h = min_y + hrange * static_cast<float>(d) / 255.f;
 			height_image.set_pixel(x, y, Color(h, 0,0,0));
 		}
 		// Skip next pixels if the file is bigger than the accepted resolution
 		for(int x = size.x; x < src_size.x; ++x) {
-			f->get_16();
+			f->get_8();
 		}
 	}
 
